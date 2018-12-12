@@ -15,6 +15,7 @@
     </style>
   </head>
   <body>
+    <canvas id="svs" width="800" height="50"></canvas>   
     <ul id="messages"></ul>
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
@@ -23,12 +24,49 @@
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       $(function () {
-        var socket = io();
+        var socket = io.connect('ws://127.0.0.1:3000');
+
+        var stage = document.getElementById('svs'),
+        ctx = stage.getContext('2d'),
+        x = 0,
+        y = 10,
+        wid = 20,
+        hei = 20;
+
+        function drawRect(x,y,wid,hei) {
+          ctx.fillStyle = '#666';
+          ctx.fillRect(x, y, wid, hei);
+        }
+
+        drawRect(x,y,wid,hei);
+        ctx.clearRect(0,0, 500, 500);
+        drawRect(x,y,wid,hei);
+
+        let info = {userInfo: 
+            {
+            userName: prompt('Gebe deinen Benutzernamen ein !:'),
+            score: x
+            }
+        }
+
+        window.onkeydown = function(event) {
+          var keyPr = event.keyCode;
+  
+          if(keyPr) {
+            x = x+1;
+            drawRect(x,y,wid,hei);
+          }
+        }   
+
+        socket.emit('user login', info)
         $('form').submit(function(){
           socket.emit('chat message', $('#m').val());
           $('#m').val('');
           return false;
         });
+        socket.on('scoreUpdateAll', function(msg) {
+          console.log(msg)
+        })
         socket.on('chat message', function(msg){
           $('#messages').append($('<li>').text(msg));
           window.scrollTo(0, document.body.scrollHeight);
